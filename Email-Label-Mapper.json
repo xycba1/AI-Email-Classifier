@@ -1,0 +1,268 @@
+{
+  "name": "Email-Label-Mapper",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "Cron Trigger",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "simple": false,
+        "filters": {
+          "q": "={{\n(() => {\nconst today = new Date();\nconst yesterday = new Date(today);\nyesterday.setDate(today.getDate() - 1);\n\nconst tomorrow = new Date(today);\ntomorrow.setDate(yesterday.getDate() + 1);\n\nconst formatDate = (d) => d.toISOString().split('T')[0].replace(/-/g, '/');\n\n// Gmail query syntax for full yesterday\nconst query = `after:${formatDate(yesterday)} before:${formatDate(tomorrow)}`;\nreturn query ;\n})()\n}}\n"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        112,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "Get Emails",
+      "webhookId": "REDACTED",
+      "notesInFlow": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_OAUTH_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        688,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{\n  (() => {\n    const headers = $json.headers || {};\n    const subject = headers.subject || '';\n    const fromField = headers.from || '';\n    const text = $json.html\n  .replace(/<script[\\s\\S]*?>[\\s\\S]*?<\\/script>/gi, '') // remove scripts\n  .replace(/<style[\\s\\S]*?>[\\s\\S]*?<\\/style>/gi, '')   // remove styles\n  .replace(/<[^>]+>/g, ' ')                             // remove HTML tags\n  .replace(/&nbsp;/gi, ' ')\n  .replace(/&amp;/gi, '&')\n  .replace(/&quot;/gi, '\"')\n  .replace(/&#39;/gi, \"'\")\n  .replace(/&lt;/gi, '<')\n  .replace(/&gt;/gi, '>')\n  .replace(/\\s+/g, ' ')                                 // collapse spaces/newlines\n  .trim();\n    // Extract sender email from \"From\" header\n    const fromMatch = fromField.match(/<([^>]+)>/);\n    const senderEmail = fromMatch ? fromMatch[1] : fromField.replace(/\"/g, '').trim();\n\n    return {\n      email_id: $json.id || '',\n      subject,\n      from: senderEmail,\n      body: text.slice(0, 350)\n    };\n  })()\n}}",
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "Filter Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      chatInput: \"YOU ARE AN EMAIL SORTING EXPERT. YOU WILL BE GIVEN EMAILS IN JSON FORMAT WITH FIELDS:\\\\n- email_id (Gmail message ID)\\\\n- subject (email subject)\\\\n- from (sender's email)\\\\n- body (first 350 characters of the email body)\\\\n\\\\nANALYZE EACH EMAIL FOR ITS RELEVANCE TO JOB SEARCH. ADD A LABEL BASED ON THE FOLLOWING CATEGORIES. IF THE EMAIL IS NOT JOB-RELATED (PROMOTIONAL/GENERAL EMAIL), SKIP IT.\\\\n\\\\nLABELS:\\\\n[\\\\n  {\\\"label\\\": \\\"Applied\\\", \\\"id\\\": 0, \\\"summary\\\": \\\"Application confirmation or thanks.\\\"},\\\\n  {\\\"label\\\": \\\"Interviews and Offers\\\", \\\"id\\\": 1, \\\"summary\\\": \\\"Indicates an upcoming interview or job/internship offer.\\\"},\\\\n  {\\\"label\\\": \\\"OAs\\\", \\\"id\\\": 2, \\\"summary\\\": \\\"Notifies user about an Online/Technical Assessment.\\\"},\\\\n  {\\\"label\\\": \\\"Recruiters\\\", \\\"id\\\": 3, \\\"summary\\\": \\\"Sent by a recruiter and NOT a promotion.\\\"},\\\\n  {\\\"label\\\": \\\"Referrals\\\", \\\"id\\\": 4, \\\"summary\\\": \\\"User was referred for a job.\\\"},\\\\n  {\\\"label\\\": \\\"Rejections\\\", \\\"id\\\": 5, \\\"summary\\\": \\\"User was rejected or not considered anymore.\\\"}\\\\n]\\\\n\\\\nREPLY FORMAT (STRICT):\\\\nReturn only **relevant emails** as JSON array of objects with fields:\\\\n- email_id\\\\n- label_id\\\\n\\\\nEXAMPLE:\\\\n[\\\\n  {\\\"email_id\\\": \\\"1789a1b2c3d4e5f6\\\", \\\"label_id\\\": 0}\\\\n]\\\\n\\\\nhere are the emails:\" + \n        JSON.stringify($items())\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "Build Prompt"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-001",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        752,
+        176
+      ],
+      "id": "REDACTED",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "YOUR_GMAIL_OAUTH_ID",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the raw string from input\nconst rawOutput = $input.first().json.output\n\n// Remove the ```json and ``` code fences\nconst jsonString = rawOutput\n  .replace(/^```json\\s*/, '')  // remove starting ```json\n  .replace(/\\s*```$/, '');     // remove ending ```\n\n// Parse the JSON string into an array\nconst dataArray = JSON.parse(jsonString);\n\n// Transform into n8n-friendly format\nconst parsedItems = dataArray.map(item => {\n  return {\n    json: {\n      emailId: item.email_id,\n      labelId: item.label_id\n    }\n  };\n});\n\n// Return the parsed items\nreturn parsedItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "Custom Output Parser"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "var labelName = \"Unknown\"\nswitch ($json[\"labelId\"]) {\n    case 0:\n        labelName = \"YOUR_LABEL_ID\";\n        break;\n    case 1:\n        labelName = \"YOUR_LABEL_ID\";\n        break;\n    case 2:\n        labelName = \"YOUR_LABEL_ID\";\n        break;\n    case 3:\n        labelName = \"YOUR_LABEL_ID\";\n        break;\n    case 4:\n        labelName = \"YOUR_LABEL_ID\";\n        break;\n    case 5:\n        labelName = \"YOUR_LABEL_ID\";\n        break;\n    default:\n        labelName = \"\"; // fallback\n}\n\nreturn {\n  \"emailId\": $json.emailId,\n  \"labelName\": labelName\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "Label Sorter"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $json.emailId }}",
+        "labelIds": "={{ $json.labelName }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1392,
+        0
+      ],
+      "id": "REDACTED",
+      "name": "Add label",
+      "webhookId": "REDACTED",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_OAUTH_ID",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Emails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Emails": {
+      "main": [
+        [
+          {
+            "node": "Filter Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Custom Output Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Data": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Custom Output Parser": {
+      "main": [
+        [
+          {
+            "node": "Label Sorter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label Sorter": {
+      "main": [
+        [
+          {
+            "node": "Add label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "REDACTED",
+  "id": "REDACTED",
+  "tags": []
+}
