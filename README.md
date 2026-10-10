@@ -1,5 +1,11 @@
 # MIDA
 
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/itznao/mida/total)
+![GitHub Issues](https://img.shields.io/github/issues/itznao/mida)
+![GitHub Release](https://img.shields.io/github/v/release/itznao/mida)
+![Discord](https://img.shields.io/discord/1554126623383494726)
+[![AI-DECLARATION: assist](https://img.shields.io/badge/䷼%20AI--DECLARATION-assist-fef9c3?labelColor=fef9c3)](https://ai-declaration.md)
+
 The Destiny 2 Multi-Tool. MIDA puts Bungie.net, DIM, light.gg, raid.report and other Destiny 2 sites in one window, with one shared Bungie.net sign-in.
 
 ## Support
