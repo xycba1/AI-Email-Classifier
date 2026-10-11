@@ -8,10 +8,6 @@
 
 The Destiny 2 Multi-Tool. MIDA puts Bungie.net, DIM, light.gg, raid.report and other Destiny 2 sites in one window, with one shared Bungie.net sign-in.
 
-## Support
-
-If you need help with MIDA or have any issues that you want to resolve or have features you want to add please head over to the [Support Discord](https://discord.gg/7gSFp628Sm) and we will try our best to help you.
-
 ## Features
 
 - All your Destiny 2 sites in one sidebar.
